@@ -1,0 +1,289 @@
+/* ========================================
+   MY LITTLE Y2K WORLD
+   第一次网页练习
+======================================== */
+
+body {
+    margin: 0;
+    min-height: 100vh;
+
+    /* 粉色背景 */
+    background-color: #ffeef7;
+
+    /* 小圆点背景 */
+    background-image:
+        radial-gradient(#f6b9d5 1px, transparent 1px);
+
+    background-size: 18px 18px;
+
+    /* 默认文字 */
+    font-family: "Trebuchet MS", Arial, sans-serif;
+
+    color: #76546a;
+}
+
+
+/* 整个网页 */
+.page {
+    width: 900px;
+    margin: 40px auto;
+
+    background: #fffafd;
+
+    border: 3px solid #e9a9c8;
+
+    box-shadow:
+        8px 8px 0 #e7c5d5;
+
+    padding: 15px;
+}
+
+
+/* 顶部标题 */
+.header {
+    text-align: center;
+
+    background: #ffd5e8;
+
+    border: 2px solid #e5a4c3;
+
+    padding: 25px;
+
+    margin-bottom: 15px;
+}
+
+
+/* 标题文字 */
+.header h1 {
+    margin: 0;
+
+    color: #d66c9b;
+
+    font-size: 38px;
+
+    text-shadow:
+        2px 2px white,
+        4px 4px #f3b6d1;
+}
+
+
+/* 副标题 */
+.header p {
+    margin-bottom: 0;
+
+    color: #a96c88;
+
+    font-size: 14px;
+}
+
+
+/* 左右布局 */
+.layout {
+    display: flex;
+
+    gap: 15px;
+}
+
+
+/* 左边 */
+.sidebar {
+    width: 230px;
+
+    flex-shrink: 0;
+}
+
+
+/* 右边 */
+.main {
+    flex: 1;
+}
+
+
+/* 每一个小窗口 */
+.window {
+    background: #fff;
+
+    border: 2px solid #e5b3ca;
+
+    margin-bottom: 15px;
+
+    box-shadow: 3px 3px 0 #efd6e2;
+}
+
+
+/* 小窗口标题 */
+.window-title {
+    background: #f8bcd5;
+
+    color: white;
+
+    font-weight: bold;
+
+    padding: 8px 10px;
+
+    border-bottom: 2px solid #e5a8c4;
+}
+
+
+/* 小窗口内容 */
+.window-content {
+    padding: 12px;
+
+    font-size: 14px;
+
+    line-height: 1.7;
+}
+
+
+/* 头像 */
+.avatar {
+    width: 120px;
+    height: 120px;
+
+    margin: 10px auto;
+
+    border-radius: 50%;
+
+    background: #ffd9e9;
+
+    border: 4px solid white;
+
+    outline: 2px solid #e4a8c4;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-size: 50px;
+}
+
+
+/* 用户名字 */
+.username {
+    text-align: center;
+
+    color: #d76e9d;
+
+    font-size: 20px;
+
+    font-weight: bold;
+}
+
+
+/* 导航按钮 */
+.nav-button {
+    display: block;
+
+    text-decoration: none;
+
+    background: #fff0f7;
+
+    color: #bd5e89;
+
+    border: 1px dashed #d88daf;
+
+    padding: 7px;
+
+    margin: 5px 0;
+
+    text-align: center;
+}
+
+
+/* 鼠标放上去 */
+.nav-button:hover {
+    background: #ffc8df;
+
+    color: white;
+}
+
+
+/* 欢迎文字 */
+.welcome {
+    background: #fff2f8;
+
+    border: 2px dashed #e7a9c6;
+
+    padding: 20px;
+
+    text-align: center;
+
+    margin-bottom: 15px;
+}
+
+
+/* 博客文章 */
+.post {
+    background: white;
+
+    border: 1px solid #edc4d7;
+
+    padding: 15px;
+
+    margin-bottom: 12px;
+}
+
+
+/* 博客标题 */
+.post-title {
+    color: #d56d9a;
+
+    font-size: 20px;
+
+    font-weight: bold;
+}
+
+
+/* 博客底部 */
+.post-info {
+    color: #ad8b9b;
+
+    font-size: 12px;
+
+    margin-top: 12px;
+}
+
+
+/* 心情区域 */
+.mood-area {
+    text-align: center;
+
+    padding: 15px;
+
+    background: #fff5fa;
+}
+
+
+/* Emoji */
+.mood {
+    font-size: 30px;
+
+    display: inline-block;
+
+    padding: 8px;
+
+    cursor: pointer;
+
+    border-radius: 10px;
+}
+
+
+.mood:hover {
+    background: #ffd3e6;
+
+    transform: scale(1.15);
+}
+
+
+/* 页脚 */
+.footer {
+    text-align: center;
+
+    color: #c38da7;
+
+    font-size: 12px;
+
+    padding: 20px;
+}
