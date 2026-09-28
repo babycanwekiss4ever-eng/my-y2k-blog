@@ -1,1081 +1,944 @@
-    <!DOCTYPE html>
-    <html lang="zh-CN">
-    <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>秘密のチャットルーム</title>
-
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=Zen+Maru+Gothic:wght@400;700&display=swap');
-
-    *{box-sizing:border-box}
-
-    body{
-        margin:0;
-        min-height:100vh;
-        background:#fff3f8;
-        color:#76516c;
-        font-family:"Trebuchet MS","Zen Maru Gothic",Arial,sans-serif;
-        overflow-x:hidden;
-    }
-
-    body:before{
-        content:"";
-        position:fixed;
-        inset:0;
-        pointer-events:none;
-        background-image:radial-gradient(#efb1ce 1.3px,transparent 1.3px);
-        background-size:24px 24px;
-        opacity:.65;
-    }
-
-    .page{
-        position:relative;
-        width:min(1200px,94vw);
-        margin:35px auto;
-        padding:16px;
-        background:#fffafd;
-        border:3px solid #e7a6c5;
-        box-shadow:9px 9px 0 #eed5e2;
-        z-index:1;
-    }
-
-    .header{
-        position:relative;
-        min-height:275px;
-        padding:42px 20px 28px;
-        text-align:center;
-        border:2px dashed #e5a0c1;
-        overflow:hidden;
-        background:
-            linear-gradient(rgba(255,244,249,.72),rgba(255,244,249,.72)),
-            url("images/bunny.jpg") center/cover no-repeat;
-    }
-
-    .header:after{
-        content:"";
-        position:absolute;
-        inset:0;
-        background:rgba(255,225,239,.18);
-        pointer-events:none;
-    }
-
-    .header>*{position:relative;z-index:2}
-
-    .fvck-placeholder{
-        display:inline-block;
-        padding:3px 15px;
-        margin-bottom:12px;
-        font-family:monospace;
-        font-weight:bold;
-        color:#73536d;
-        border:1px solid #b982a4;
-        background:#fff8fc;
-        font-size:14px;
-    }
-
-    .header h1{
-        margin:8px 0 15px;
-        color:#9b5c83;
-        font-family:"Kosugi Maru","Zen Maru Gothic",sans-serif;
-        font-size:clamp(34px,5vw,66px);
-        letter-spacing:4px;
-        text-shadow:3px 3px #fff,6px 6px #efb5d0;
-    }
-
-    .header p{
-        margin:9px 0;
-        font-size:20px;
-        color:#815b75;
-    }
-
-    .header .small{
-        font-family:"Kosugi Maru","Zen Maru Gothic",sans-serif;
-        font-size:19px;
-    }
-
-    .layout{
-        display:grid;
-        grid-template-columns:280px 1fr;
-        gap:18px;
-        margin-top:18px;
-    }
-
-    .sidebar,.main{min-width:0}
-
-    .window{
-        background:#fff;
-        border:2px solid #e6adca;
-        box-shadow:4px 4px 0 #f0d9e4;
-        margin-bottom:18px;
-    }
-
-    .window-title{
-        padding:12px 15px;
-        background:#efb2cf;
-        border-bottom:2px solid #e3a2c1;
-        color:#fff;
-        font-size:23px;
-        font-weight:bold;
-    }
-
-    .window-content{padding:18px}
-
-    .profile{
-        text-align:center;
-    }
-
-    .avatar{
-        width:145px;
-        height:145px;
-        margin:8px auto 15px;
-        border-radius:50%;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        background:#ffdce9;
-        border:4px solid #fff;
-        outline:3px solid #e3a6c3;
-        font-size:70px;
-    }
-
-    .username{
-        color:#d46698;
-        font-size:29px;
-        font-weight:bold;
-    }
-
-    .id{
-        margin-top:8px;
-        color:#9d708b;
-        font-family:monospace;
-        font-size:15px;
-    }
-
-    .welcome{
-        padding:34px 25px;
-        text-align:center;
-        background:#fff4f9;
-        border:2px dashed #e6a7c5;
-        margin-bottom:18px;
-    }
-
-    .welcome h2{
-        margin:0 0 20px;
-        font-size:38px;
-        color:#805871;
-    }
-
-    .welcome p{
-        font-size:21px;
-        margin:13px 0;
-    }
-
-    .editor textarea,
-    .guest-input{
-        width:100%;
-        border:2px solid #e4aac7;
-        background:#fffafd;
-        color:#76516c;
-        padding:13px;
-        font:18px "Trebuchet MS","Zen Maru Gothic",sans-serif;
-        outline:none;
-    }
-
-    .editor input{
-        width:100%;
-        margin-bottom:10px;
-        border:2px solid #e4aac7;
-        background:#fffafd;
-        color:#76516c;
-        padding:12px;
-        font-size:18px;
-        outline:none;
-    }
-
-    .editor textarea{min-height:150px;resize:vertical}
-
-    .editor textarea:focus,
-    .editor input:focus,
-    .guest-input:focus{
-        border-color:#d76b9d;
-        box-shadow:0 0 0 3px #fde1ed;
-    }
-
-    .hint{
-        margin:6px 0 12px;
-        color:#a87a94;
-        font-size:14px;
-    }
-
-    .btn{
-        border:2px solid #df9fbd;
-        background:#ffe0ed;
-        color:#9b5a80;
-        padding:10px 18px;
-        font-size:17px;
-        cursor:pointer;
-        margin:5px 6px 5px 0;
-    }
-
-    .btn:hover{background:#f8bfd7}
-    .btn.delete{background:#fff7fa}
-    .btn.delete:hover{background:#ffd6e6}
-
-    .post{
-        padding:20px;
-        border:1px solid #e7bad0;
-        margin-bottom:18px;
-        background:#fff;
-    }
-
-    .post-title{
-        font-size:29px;
-        font-weight:bold;
-        color:#d06091;
-        margin-bottom:20px;
-    }
-
-    .post-body{
-        white-space:pre-wrap;
-        font-size:20px;
-        line-height:1.8;
-        min-height:55px;
-    }
-
-    .post-meta{
-        border-top:2px dashed #efc3d7;
-        margin-top:20px;
-        padding-top:14px;
-        color:#b1819a;
-        font-size:16px;
-    }
-
-    .post-actions{margin-top:12px}
-
-    .comment-box{
-        margin-top:20px;
-        padding-top:18px;
-        border-top:2px dashed #efc3d7;
-    }
-
-    .comment-title{
-        color:#b66a91;
-        font-size:22px;
-        margin-bottom:12px;
-    }
-
-    .comment-row{
-        display:flex;
-        gap:8px;
-        margin:9px 0;
-        align-items:flex-start;
-    }
-
-    .comment-text{
-        flex:1;
-        padding:10px 12px;
-        background:#fff5fa;
-        border:1px solid #edc3d7;
-        font-size:16px;
-        white-space:pre-wrap;
-    }
-
-    .comment-delete{
-        border:1px solid #e3a5c1;
-        background:#fff;
-        color:#a86688;
-        padding:9px 11px;
-        cursor:pointer;
-    }
-
-    .empty{
-        padding:20px;
-        text-align:center;
-        color:#b88ca2;
-        font-size:18px;
-    }
-
-    .mood-area{
-        text-align:center;
-        padding:25px 10px;
-        background:#fff5fa;
-        overflow-x:auto;
-    }
-
-    .mood-title{
-        font-size:23px;
-        margin-bottom:20px;
-    }
-
-    .mood-list{
-        display:flex;
-        justify-content:center;
-        align-items:center;
-        gap:7px;
-        min-width:max-content;
-        padding:5px 10px 15px;
-    }
-
-    .mood{
-        border:0;
-        background:transparent;
-        font-size:32px;
-        cursor:pointer;
-        padding:5px;
-        transition:.2s;
-    }
-
-    .mood:hover{
-        transform:translateY(-6px) scale(1.12);
-    }
-
-    .current-mood{
-        margin-top:8px;
-        font-size:20px;
-    }
-
-    .guest-text{
-        font-size:20px;
-        line-height:1.6;
-        margin:0 0 12px;
-    }
-
-    .guest-input{
-        min-height:110px;
-        resize:vertical;
-    }
-
-    .guest-row{
-        display:flex;
-        gap:10px;
-        align-items:flex-end;
-    }
-
-    .guest-row .guest-input{flex:1}
-
-    .message{
-        margin-top:15px;
-        padding:13px;
-        background:#fff6fa;
-        border:1px solid #ecc3d7;
-    }
-
-    .message-head{
-        color:#b86b92;
-        font-weight:bold;
-    }
-
-    .system-line{
-        margin:18px 0;
-        font-size:18px;
-    }
-
-    .footer{
-        text-align:center;
-        padding:25px 10px 12px;
-        color:#b7829d;
-        font-size:14px;
-    }
-
-    /* 全页面漂浮装饰 */
-    #floating-layer{
-        position:fixed;
-        inset:0;
-        pointer-events:none;
-        z-index:9999;
-        overflow:hidden;
-    }
-
-    .float-item{
-        position:absolute;
-        user-select:none;
-        opacity:.72;
-        animation:
-            floatAround var(--duration) ease-in-out infinite alternate,
-            sparkle var(--sparkle) ease-in-out infinite;
-        filter:drop-shadow(0 0 5px rgba(255,183,216,.75));
-    }
-
-    @keyframes floatAround{
-        0%{transform:translate(0,0) rotate(-8deg)}
-        50%{transform:translate(var(--x),var(--y)) rotate(8deg)}
-        100%{transform:translate(calc(var(--x) * -1),calc(var(--y) * -1)) rotate(-5deg)}
-    }
-
-    @keyframes sparkle{
-        0%,100%{opacity:.25;filter:drop-shadow(0 0 2px rgba(255,180,215,.3))}
-        50%{opacity:.9;filter:drop-shadow(0 0 9px rgba(255,170,210,.95))}
-    }
-
-    @media(max-width:800px){
-        .layout{grid-template-columns:1fr}
-        .page{width:96vw;padding:9px}
-        .header{min-height:250px}
-        .header h1{font-size:36px;letter-spacing:2px}
-        .header p{font-size:17px}
-        .mood-list{justify-content:flex-start}
-    }
-
-    @media(prefers-reduced-motion:reduce){
-        .float-item{animation:none}
-    }
-    </style>
-    </head>
-
-    <body>
-
-    <div id="floating-layer"></div>
-
-    <div class="page">
-
-    <header class="header">
-        <div class="fvck-placeholder">♡ welcome ♡</div>
-        <h1>♡ 秘密のチャットルーム ♡</h1>
-        <p>秘密聊天室</p>
-        <p class="small">快来留言吧！</p>
-        <p class="small">‧˚꒰🐾୭ ˚. ᵎᵎ</p>
-    </header>
-
-    <div class="layout">
-
-    <aside class="sidebar">
-
-    <section class="window">
-        <div class="window-title">♡ PROFILE.exe</div>
-        <div class="window-content profile">
-            <div class="avatar" id="profile-avatar">🐰</div>
-            <div class="id">ID: <span id="profile-id"></span></div>
-            <div style="margin-top:8px;color:#b88ca2;font-size:13px;">
-                random animal visitor ♡
-            </div>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>秘密のチャットルーム</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=Zen+Maru+Gothic:wght@400;700&display=swap');
+
+*{box-sizing:border-box}
+
+body{
+    margin:0;
+    min-height:100vh;
+    background:#fff3f8;
+    color:#76516c;
+    font-family:"Trebuchet MS","Zen Maru Gothic",Arial,sans-serif;
+    overflow-x:hidden;
+}
+
+body:before{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    background-image:radial-gradient(#efb1ce 1.3px,transparent 1.3px);
+    background-size:24px 24px;
+    opacity:.65;
+}
+
+.page{
+    position:relative;
+    width:min(1200px,94vw);
+    margin:35px auto;
+    padding:16px;
+    background:#fffafd;
+    border:3px solid #e7a6c5;
+    box-shadow:9px 9px 0 #eed5e2;
+    z-index:1;
+}
+
+.header{
+    position:relative;
+    min-height:275px;
+    padding:42px 20px 28px;
+    text-align:center;
+    border:2px dashed #e5a0c1;
+    overflow:hidden;
+    background:
+        linear-gradient(rgba(255,244,249,.72),rgba(255,244,249,.72)),
+        url("images/bunny.jpg") center/cover no-repeat;
+}
+
+.header:after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:rgba(255,225,239,.18);
+    pointer-events:none;
+}
+
+.header>*{position:relative;z-index:2}
+
+.fvck-placeholder{
+    display:inline-block;
+    padding:3px 15px;
+    margin-bottom:12px;
+    font-family:monospace;
+    font-weight:bold;
+    color:#73536d;
+    border:1px solid #b982a4;
+    background:#fff8fc;
+    font-size:14px;
+}
+
+.header h1{
+    margin:8px 0 15px;
+    color:#9b5c83;
+    font-family:"Kosugi Maru","Zen Maru Gothic",sans-serif;
+    font-size:clamp(34px,5vw,66px);
+    letter-spacing:4px;
+    text-shadow:3px 3px #fff,6px 6px #efb5d0;
+}
+
+.header p{
+    margin:9px 0;
+    font-size:20px;
+    color:#815b75;
+}
+
+.header .small{
+    font-family:"Kosugi Maru","Zen Maru Gothic",sans-serif;
+    font-size:19px;
+}
+
+.layout{
+    display:grid;
+    grid-template-columns:280px 1fr;
+    gap:18px;
+    margin-top:18px;
+}
+
+.sidebar,.main{min-width:0}
+
+.window{
+    background:#fff;
+    border:2px solid #e6adca;
+    box-shadow:4px 4px 0 #f0d9e4;
+    margin-bottom:18px;
+}
+
+.window-title{
+    padding:12px 15px;
+    background:#efb2cf;
+    border-bottom:2px solid #e3a2c1;
+    color:#fff;
+    font-size:23px;
+    font-weight:bold;
+}
+
+.window-content{padding:18px}
+
+.profile{
+    text-align:center;
+}
+
+.avatar{
+    width:145px;
+    height:145px;
+    margin:8px auto 15px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#ffdce9;
+    border:4px solid #fff;
+    outline:3px solid #e3a6c3;
+    font-size:70px;
+}
+
+.username{
+    color:#d46698;
+    font-size:29px;
+    font-weight:bold;
+}
+
+.id{
+    margin-top:8px;
+    color:#9d708b;
+    font-family:monospace;
+    font-size:15px;
+}
+
+.welcome{
+    padding:34px 25px;
+    text-align:center;
+    background:#fff4f9;
+    border:2px dashed #e6a7c5;
+    margin-bottom:18px;
+}
+
+.welcome h2{
+    margin:0 0 20px;
+    font-size:38px;
+    color:#805871;
+}
+
+.welcome p{
+    font-size:21px;
+    margin:13px 0;
+}
+
+.editor textarea,
+.guest-input{
+    width:100%;
+    border:2px solid #e4aac7;
+    background:#fffafd;
+    color:#76516c;
+    padding:13px;
+    font:18px "Trebuchet MS","Zen Maru Gothic",sans-serif;
+    outline:none;
+}
+
+.editor input{
+    width:100%;
+    margin-bottom:10px;
+    border:2px solid #e4aac7;
+    background:#fffafd;
+    color:#76516c;
+    padding:12px;
+    font-size:18px;
+    outline:none;
+}
+
+.editor textarea{min-height:150px;resize:vertical}
+
+.editor textarea:focus,
+.editor input:focus,
+.guest-input:focus{
+    border-color:#d76b9d;
+    box-shadow:0 0 0 3px #fde1ed;
+}
+
+.hint{
+    margin:6px 0 12px;
+    color:#a87a94;
+    font-size:14px;
+}
+
+.btn{
+    border:2px solid #df9fbd;
+    background:#ffe0ed;
+    color:#9b5a80;
+    padding:10px 18px;
+    font-size:17px;
+    cursor:pointer;
+    margin:5px 6px 5px 0;
+}
+
+.btn:hover{background:#f8bfd7}
+.btn.delete{background:#fff7fa}
+.btn.delete:hover{background:#ffd6e6}
+
+.post{
+    padding:20px;
+    border:1px solid #e7bad0;
+    margin-bottom:18px;
+    background:#fff;
+}
+
+.post-title{
+    font-size:29px;
+    font-weight:bold;
+    color:#d06091;
+    margin-bottom:20px;
+}
+
+.post-body{
+    white-space:pre-wrap;
+    font-size:20px;
+    line-height:1.8;
+    min-height:55px;
+}
+
+.post-meta{
+    border-top:2px dashed #efc3d7;
+    margin-top:20px;
+    padding-top:14px;
+    color:#b1819a;
+    font-size:16px;
+}
+
+.post-actions{margin-top:12px}
+
+.comment-box{
+    margin-top:20px;
+    padding-top:18px;
+    border-top:2px dashed #efc3d7;
+}
+
+.comment-title{
+    color:#b66a91;
+    font-size:22px;
+    margin-bottom:12px;
+}
+
+.comment-row{
+    display:flex;
+    gap:8px;
+    margin:9px 0;
+    align-items:flex-start;
+}
+
+.comment-text{
+    flex:1;
+    padding:10px 12px;
+    background:#fff5fa;
+    border:1px solid #edc3d7;
+    font-size:16px;
+    white-space:pre-wrap;
+}
+
+.comment-delete{
+    border:1px solid #e3a5c1;
+    background:#fff;
+    color:#a86688;
+    padding:9px 11px;
+    cursor:pointer;
+}
+
+.empty{
+    padding:20px;
+    text-align:center;
+    color:#b88ca2;
+    font-size:18px;
+}
+
+.mood-area{
+    text-align:center;
+    padding:25px 10px;
+    background:#fff5fa;
+    overflow-x:auto;
+}
+
+.mood-title{
+    font-size:23px;
+    margin-bottom:20px;
+}
+
+.mood-list{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:7px;
+    min-width:max-content;
+    padding:5px 10px 15px;
+}
+
+.mood{
+    border:0;
+    background:transparent;
+    font-size:32px;
+    cursor:pointer;
+    padding:5px;
+    transition:.2s;
+}
+
+.mood:hover{
+    transform:translateY(-6px) scale(1.12);
+}
+
+.current-mood{
+    margin-top:8px;
+    font-size:20px;
+}
+
+.guest-text{
+    font-size:20px;
+    line-height:1.6;
+    margin:0 0 12px;
+}
+
+.guest-input{
+    min-height:110px;
+    resize:vertical;
+}
+
+.guest-row{
+    display:flex;
+    gap:10px;
+    align-items:flex-end;
+}
+
+.guest-row .guest-input{flex:1}
+
+.message{
+    margin-top:15px;
+    padding:13px;
+    background:#fff6fa;
+    border:1px solid #ecc3d7;
+}
+
+.message-head{
+    color:#b86b92;
+    font-weight:bold;
+}
+
+.system-line{
+    margin:18px 0;
+    font-size:18px;
+}
+
+.footer{
+    text-align:center;
+    padding:25px 10px 12px;
+    color:#b7829d;
+    font-size:14px;
+}
+
+#floating-layer{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:9999;
+    overflow:hidden;
+}
+
+.float-item{
+    position:absolute;
+    user-select:none;
+    opacity:.72;
+    animation:
+        floatAround var(--duration) ease-in-out infinite alternate,
+        sparkle var(--sparkle) ease-in-out infinite;
+    filter:drop-shadow(0 0 5px rgba(255,183,216,.75));
+}
+
+@keyframes floatAround{
+    0%{transform:translate(0,0) rotate(-8deg)}
+    50%{transform:translate(var(--x),var(--y)) rotate(8deg)}
+    100%{transform:translate(calc(var(--x) * -1),calc(var(--y) * -1)) rotate(-5deg)}
+}
+
+@keyframes sparkle{
+    0%,100%{opacity:.25;filter:drop-shadow(0 0 2px rgba(255,180,215,.3))}
+    50%{opacity:.9;filter:drop-shadow(0 0 9px rgba(255,170,210,.95))}
+}
+
+@media(max-width:800px){
+    .layout{grid-template-columns:1fr}
+    .page{width:96vw;padding:9px}
+    .header{min-height:250px}
+    .header h1{font-size:36px;letter-spacing:2px}
+    .header p{font-size:17px}
+    .mood-list{justify-content:flex-start}
+}
+
+@media(prefers-reduced-motion:reduce){
+    .float-item{animation:none}
+}
+</style>
+</head>
+
+<body>
+
+<div id="floating-layer"></div>
+
+<div class="page">
+
+<header class="header">
+    <div class="fvck-placeholder">♡ welcome ♡</div>
+    <h1>♡ 秘密のチャットルーム ♡</h1>
+    <p>秘密聊天室</p>
+    <p class="small">快来留言吧！</p>
+    <p class="small">‧˚꒰🐾୭ ˚. ᵎᵎ</p>
+</header>
+
+<div class="layout">
+
+<aside class="sidebar">
+
+<section class="window">
+    <div class="window-title">♡ PROFILE.exe</div>
+    <div class="window-content profile">
+        <div class="avatar" id="profile-avatar">🐰</div>
+        <div class="id">ID: <span id="profile-id"></span></div>
+        <div style="margin-top:8px;color:#b88ca2;font-size:13px;">
+            random animal visitor ♡
         </div>
-    </section>
-
-    <section class="window">
-        <div class="window-title">♡ SYSTEM INFO</div>
-        <div class="window-content">
-            <div class="system-line">visitor: <strong id="visitor-id"></strong></div>
-            <div class="system-line">status: <span style="color:#d46698">ONLINE ♡</span></div>
-            <div class="system-line">mood: <span id="system-mood">🥲</span></div>
-        </div>
-    </section>
-
-    <section class="window">
-        <div class="window-title">♡ NOTICE.txt</div>
-        <div class="window-content">
-            <p>① 不要转载我的内容</p>
-            <p>② 此网站仅你我二人使用</p>
-            <p>③ 欢迎留言</p>
-            <p style="text-align:center;font-size:20px">˗ˋˏ ♡ ˎˊ˗</p>
-        </div>
-    </section>
-
-    </aside>
-
-    <main class="main">
-
-    <section class="welcome">
-        <h2>♡ Welcome ♡</h2>
-        <p>在这里写日记、记录心情、留下小小的留言吧。</p>
-    </section>
-
-    <section class="window">
-        <div class="window-title">♡ BLOG DIARY</div>
-        <div class="window-content">
-
-            <div class="editor">
-                <h3 style="color:#d06091;font-size:25px;margin-top:0">
-                    写一篇新的日记 ♡
-                </h3>
-                <div class="hint">快来写一篇自己的日记吧！</div>
-
-                <input id="post-title" type="text" maxlength="80"
-                       placeholder="日记标题，例如：今天发生了一件小事 ♡">
-
-                <textarea id="post-body"
-                          placeholder="写下今天的故事、心情或者想说的话……"></textarea>
-
-                <button class="btn" id="send-post">♡ SEND</button>
-            </div>
-
-            <div id="posts"></div>
-
-        </div>
-    </section>
-
-    <section class="window">
-        <div class="window-title">♡ HOW ARE YOU FEELING?</div>
-        <div class="mood-area">
-            <div class="mood-title">choose your mood ♡</div>
-
-            <div class="mood-list" id="mood-list"></div>
-
-            <div class="current-mood">
-                today's mood: <span id="today-mood">🥲</span>
-            </div>
-        </div>
-    </section>
-
-    <section class="window">
-        <div class="window-title">♡ GUESTBOOK</div>
-        <div class="window-content">
-            <p class="guest-text">快来留言吧！ ♡</p>
-            <p class="guest-text">everyone is welcome ~</p>
-
-            <div class="guest-row">
-                <textarea id="guest-input" class="guest-input"
-                          placeholder="write something cute... ♡"></textarea>
-                <button class="btn" id="send-guest">✉ SEND</button>
-            </div>
-
-            <div id="guest-messages"></div>
-        </div>
-    </section>
-
-    </main>
     </div>
+</section>
 
-    <div class="footer">
-        ♡♡♡ thank you for visiting ♡♡♡<br><br>
-        best viewed with love ☆
+<section class="window">
+    <div class="window-title">♡ SYSTEM INFO</div>
+    <div class="window-content">
+        <div class="system-line">visitor: <strong id="visitor-id"></strong></div>
+        <div class="system-line">status: <span style="color:#d46698">ONLINE ♡</span></div>
+        <div class="system-line">mood: <span id="system-mood">🥲</span></div>
     </div>
+</section>
+
+<section class="window">
+    <div class="window-title">♡ NOTICE.txt</div>
+    <div class="window-content">
+        <p>① 不要转载我的内容</p>
+        <p>② 此网站仅你我二人使用</p>
+        <p>③ 欢迎留言</p>
+        <p style="text-align:center;font-size:20px">˗ˋˏ ♡ ˎˊ˗</p>
+    </div>
+</section>
+
+</aside>
+
+<main class="main">
+
+<section class="welcome">
+    <h2>♡ Welcome ♡</h2>
+    <p>在这里写日记、记录心情、留下小小的留言吧。</p>
+</section>
+
+<section class="window">
+    <div class="window-title">♡ BLOG DIARY</div>
+    <div class="window-content">
+
+        <div class="editor">
+            <h3 style="color:#d06091;font-size:25px;margin-top:0">
+                写一篇新的日记 ♡
+            </h3>
+            <div class="hint">快来写一篇自己的日记吧！</div>
+
+            <input id="post-title" type="text" maxlength="80"
+                   placeholder="日记标题，例如：今天发生了一件小事 ♡">
+
+            <textarea id="post-body"
+                      placeholder="写下今天的故事、心情或者想说的话……"></textarea>
+
+            <button class="btn" id="send-post">♡ SEND</button>
+        </div>
+
+        <div id="posts"></div>
 
     </div>
+</section>
 
-    <script>
-    /* =========================
-       1. 稳定的本地匿名 ID
-    ========================= */
-    /* 每个浏览器拥有一个稳定的匿名 ID + 一个随机动物头像
-       第一次访问时随机生成，之后刷新页面不会改变。
-       注意：这是浏览器匿名身份，不是服务器 IP 身份。 */
-    const animalAvatars = [
-        "🐶","🐱","🐭","🐹","🐰","🦊","🐻","🐼",
-        "🐨","🐯","🦁","🐮","🐷","🐸","🐵","🐔",
-        "🐧","🐦","🐤","🦄","🐝","🦋","🐢","🐙",
-        "🦑","🦀","🐳","🐬","🦭","🦦","🦥","🦔"
-    ];
+<section class="window">
+    <div class="window-title">♡ HOW ARE YOU FEELING?</div>
+    <div class="mood-area">
+        <div class="mood-title">choose your mood ♡</div>
 
-    function randomAnimalAvatar(){
-        return animalAvatars[
-            Math.floor(Math.random() * animalAvatars.length)
-        ];
+        <div class="mood-list" id="mood-list"></div>
+
+        <div class="current-mood">
+            today's mood: <span id="today-mood">🥲</span>
+        </div>
+    </div>
+</section>
+
+<section class="window">
+    <div class="window-title">♡ GUESTBOOK</div>
+    <div class="window-content">
+        <p class="guest-text">快来留言吧！ ♡</p>
+        <p class="guest-text">everyone is welcome ~</p>
+
+        <div class="guest-row">
+            <textarea id="guest-input" class="guest-input"
+                      placeholder="write something cute... ♡"></textarea>
+            <button class="btn" id="send-guest">✉ SEND</button>
+        </div>
+
+        <div id="guest-messages"></div>
+    </div>
+</section>
+
+</main>
+</div>
+
+<div class="footer">
+    ♡♡♡ thank you for visiting ♡♡♡<br><br>
+    best viewed with love ☆
+</div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* =========================
+   0. Supabase 初始化
+========================= */
+const SUPABASE_URL = "https://jtfsgnktzeonvefsvmlt.supabase.co";
+const SUPABASE_KEY = "sb_publishable_cz8wE7QcBxZxcp6x_yZoCQ_AWJjogYV";
+
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+/* =========================
+   1. 稳定的本地匿名 ID
+========================= */
+const animalAvatars = [
+    "🐶","🐱","🐭","🐹","🐰","🦊","🐻","🐼",
+    "🐨","🐯","🦁","🐮","🐷","🐸","🐵","🐔",
+    "🐧","🐦","🐤","🦄","🐝","🦋","🐢","🐙",
+    "🦑","🦀","🐳","🐬","🦭","🦦","🦥","🦔"
+];
+
+function randomAnimalAvatar(){
+    return animalAvatars[Math.floor(Math.random() * animalAvatars.length)];
+}
+
+function getVisitorId(){
+    let id = localStorage.getItem("secretChatVisitorId");
+    if(!id){
+        if(window.crypto && crypto.randomUUID){
+            id = "visitor-" + crypto.randomUUID().replaceAll("-","").slice(0,8).toUpperCase();
+        }else{
+            id = "visitor-" + Math.random().toString(36).slice(2,10).toUpperCase();
+        }
+        localStorage.setItem("secretChatVisitorId", id);
     }
+    return id;
+}
 
-    function getVisitorId(){
-        let id = localStorage.getItem("secretChatVisitorId");
-
-        if(!id){
-            if(window.crypto && crypto.randomUUID){
-                id = "visitor-" +
-                    crypto.randomUUID()
-                        .replaceAll("-","")
-                        .slice(0,8)
-                        .toUpperCase();
-            }else{
-                id = "visitor-" +
-                    Math.random().toString(36).slice(2,10).toUpperCase();
-            }
-
-            localStorage.setItem("secretChatVisitorId", id);
-        }
-
-        return id;
+function getVisitorAvatar(){
+    let avatar = localStorage.getItem("secretChatVisitorAvatar");
+    if(!avatar){
+        avatar = randomAnimalAvatar();
+        localStorage.setItem("secretChatVisitorAvatar", avatar);
     }
+    return avatar;
+}
 
-    function getVisitorAvatar(){
-        let avatar = localStorage.getItem("secretChatVisitorAvatar");
-
-        if(!avatar){
-            avatar = randomAnimalAvatar();
-            localStorage.setItem("secretChatVisitorAvatar", avatar);
-        }
-
-        return avatar;
+function avatarFromId(id){
+    const text = String(id || "visitor");
+    let total = 0;
+    for(let i = 0; i < text.length; i++){
+        total = (total * 31 + text.charCodeAt(i)) >>> 0;
     }
-
-    /* 让旧数据也能得到稳定头像 */
-    function avatarFromId(id){
-        const text = String(id || "visitor");
-        let total = 0;
-
-        for(let i = 0; i < text.length; i++){
-            total = (total * 31 + text.charCodeAt(i)) >>> 0;
-        }
-
-        return animalAvatars[total % animalAvatars.length];
-    }
-
-    const visitorId = getVisitorId();
-    const visitorAvatar = getVisitorAvatar();
-
-    document.getElementById("visitor-id").textContent = visitorId;
-    document.getElementById("profile-id").textContent = visitorId;
-    document.getElementById("profile-avatar").textContent = visitorAvatar;
-
-
-    /* =========================
-       2. 日记数据
-       每个浏览器独立保存
-    ========================= */
-    let posts = JSON.parse(localStorage.getItem("secretChatPosts") || "[]");
-
-    function savePosts(){
-        localStorage.setItem("secretChatPosts", JSON.stringify(posts));
-    }
-
-    function escapeHTML(text){
-        return String(text)
-            .replaceAll("&","&amp;")
-            .replaceAll("<","&lt;")
-            .replaceAll(">","&gt;")
-            .replaceAll('"',"&quot;")
-            .replaceAll("'","&#039;");
-    }
-
-    function renderPosts(){
-
-        const container = document.getElementById("posts");
-
-        if(posts.length === 0){
-            container.innerHTML = `
-                <div class="empty">
-                    这里还没有日记 ♡<br>
-                    快来写下第一篇吧！
-                </div>
-            `;
-            return;
-        }
-
-        container.innerHTML = posts.map(post => {
-
-            const comments = post.comments || [];
-
-            return `
-            <article class="post" data-post-id="${post.id}">
-
-                <div class="post-title">
-                    ♡ ${escapeHTML(post.title)}
-                </div>
-
-                <div class="post-body">${escapeHTML(post.body)}</div>
-
-                <div class="post-meta">
-                    ♡ ${escapeHTML(post.date)}
-                   　♡ ${post.likes} likes
-                   　💬 ${comments.length} comments
-                </div>
-
-                <div class="post-actions">
-                    <button class="btn like-btn" data-id="${post.id}">
-                        ♡ LIKE
-                    </button>
-
-                    <button class="btn delete delete-post-btn" data-id="${post.id}">
-                        × DELETE
-                    </button>
-                </div>
-
-                <div class="comment-box">
-                    <div class="comment-title">♡ 评论区</div>
-
-                    <div class="comments-list">
-                        ${
-                            comments.length
-                            ? comments.map(comment => `
-                                <div class="comment-row">
-                                    <div class="comment-text">
-                                        <strong>${escapeHTML(comment.avatar || avatarFromId(comment.owner || comment.user))} ${escapeHTML(comment.user)}</strong>
-                                        ♡<br>
-                                        ${escapeHTML(comment.text)}
-                                    </div>
-
-                                    <button class="comment-delete"
-                                            data-post-id="${post.id}"
-                                            data-comment-id="${comment.id}">
-                                        ×
-                                    </button>
-                                </div>
-                            `).join("")
-                            : `<div style="color:#b88ca2;margin-bottom:12px">
-                                还没有评论，来留下第一句话吧 ♡
-                               </div>`
-                        }
-                    </div>
-
-                    <div class="guest-row">
-                        <textarea
-                            class="guest-input comment-input"
-                            data-post-id="${post.id}"
-                            placeholder="写一句评论吧... ♡"></textarea>
-
-                        <button class="btn send-comment-btn"
-                                data-post-id="${post.id}">
-                            SEND
-                        </button>
-                    </div>
-                </div>
-
-            </article>
-            `;
-        }).join("");
-    }
-
-
-    /* =========================
-       3. 发布日记
-    ========================= */
-    document.getElementById("send-post").addEventListener("click",function(){
-
-        const titleInput = document.getElementById("post-title");
-        const bodyInput = document.getElementById("post-body");
-
-        const title = titleInput.value.trim();
-        const body = bodyInput.value.trim();
-
-        if(!title || !body){
-            alert("请先写好标题和日记内容 ♡");
-            return;
-        }
-
-        const now = new Date();
-
-        const post = {
-            id: Date.now().toString(36) + Math.random().toString(36).slice(2,6),
-            owner: visitorId,
-            title:title,
-            body:body,
-            date:
-                now.getFullYear() + "/" +
-                String(now.getMonth()+1).padStart(2,"0") + "/" +
-                String(now.getDate()).padStart(2,"0"),
-            likes:0,
-            comments:[]
-        };
-
-        posts.unshift(post);
-        savePosts();
-
-        titleInput.value = "";
-        bodyInput.value = "";
-
-        renderPosts();
-    });
-
-
-    /* =========================
-       4. 日记 / 评论功能
-       用事件委托，确保动态生成的按钮也能工作
-    ========================= */
-    document.getElementById("posts").addEventListener("click",function(e){
-
-        /* LIKE */
-        const likeButton = e.target.closest(".like-btn");
-
-        if(likeButton){
-
-            const post = posts.find(p => p.id === likeButton.dataset.id);
-
-            if(post){
-                post.likes += 1;
-                savePosts();
-                renderPosts();
-            }
-
-            return;
-        }
-
-
-        /* DELETE POST */
-        const deletePostButton = e.target.closest(".delete-post-btn");
-
-        if(deletePostButton){
-
-            const id = deletePostButton.dataset.id;
-            const post = posts.find(p => p.id === id);
-
-            if(!post) return;
-
-            if(post.owner !== visitorId){
-                alert("只能删除你自己发布的日记 ♡");
-                return;
-            }
-
-            if(confirm("确定要删除这篇日记吗？")){
-
-                posts = posts.filter(p => p.id !== id);
-
-                savePosts();
-                renderPosts();
-            }
-
-            return;
-        }
-
-
-        /* SEND COMMENT */
-        const sendCommentButton = e.target.closest(".send-comment-btn");
-
-        if(sendCommentButton){
-
-            const postId = sendCommentButton.dataset.postId;
-            const post = posts.find(p => p.id === postId);
-
-            if(!post) return;
-
-            const input = document.querySelector(
-                `.comment-input[data-post-id="${postId}"]`
-            );
-
-            if(!input) return;
-
-            const text = input.value.trim();
-
-            if(!text){
-                alert("请先写一点评论 ♡");
-                return;
-            }
-
-            if(!post.comments){
-                post.comments = [];
-            }
-
-            post.comments.push({
-                id:Date.now().toString(36) + Math.random().toString(36).slice(2,5),
-                owner:visitorId,
-                user:visitorId,
-                avatar:visitorAvatar,
-                text:text
-            });
-
-            savePosts();
-
-            renderPosts();
-
-            return;
-        }
-
-
-        /* DELETE COMMENT */
-        const deleteCommentButton = e.target.closest(".comment-delete");
-
-        if(deleteCommentButton){
-
-            const postId = deleteCommentButton.dataset.postId;
-            const commentId = deleteCommentButton.dataset.commentId;
-
-            const post = posts.find(p => p.id === postId);
-
-            if(!post || !post.comments) return;
-
-            const comment = post.comments.find(c => c.id === commentId);
-
-            if(!comment) return;
-
-            if(comment.owner !== visitorId){
-                alert("只能删除你自己发布的评论 ♡");
-                return;
-            }
-
-            if(confirm("确定删除这条评论吗？")){
-
-                post.comments =
-                    post.comments.filter(c => c.id !== commentId);
-
-                savePosts();
-                renderPosts();
-            }
-        }
-
-    });
-
-
-    /* =========================
-       5. 心情
-    ========================= */
-    const moods = [
-        "🥲","🥰","🙃","😔","🥺","😳","🤯","😶‍🌫️","🥶",
-        "🫠","😑","😵‍💫","🤢","🫥","😵","🤡","☠️"
-    ];
-
-    const moodList = document.getElementById("mood-list");
-
-    moods.forEach(mood => {
-
-        const button = document.createElement("button");
-
-        button.className = "mood";
-        button.textContent = mood;
-        button.title = mood;
-
-        button.addEventListener("click",function(){
-
-            document.getElementById("today-mood").textContent = mood;
-            document.getElementById("system-mood").textContent = mood;
-
-            localStorage.setItem("secretChatMood",mood);
+    return animalAvatars[total % animalAvatars.length];
+}
+
+const visitorId = getVisitorId();
+const visitorAvatar = getVisitorAvatar();
+
+document.getElementById("visitor-id").textContent = visitorId;
+document.getElementById("profile-id").textContent = visitorId;
+document.getElementById("profile-avatar").textContent = visitorAvatar;
+
+function escapeHTML(text){
+    return String(text)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+}
+
+/* =========================
+   2. 日记数据（云端）
+========================= */
+let posts = [];
+let commentsByPost = {};
+
+async function loadPosts(){
+    const { data, error } = await supabaseClient
+        .from("posts")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+    if(error){ console.error(error); return; }
+    posts = data || [];
+
+    const { data: cData, error: cError } = await supabaseClient
+        .from("comments")
+        .select("*")
+        .order("created_at", { ascending: true });
+
+    if(!cError){
+        commentsByPost = {};
+        (cData || []).forEach(c => {
+            if(!commentsByPost[c.post_id]) commentsByPost[c.post_id] = [];
+            commentsByPost[c.post_id].push(c);
         });
-
-        moodList.appendChild(button);
-    });
-
-    const savedMood = localStorage.getItem("secretChatMood");
-
-    if(savedMood){
-        document.getElementById("today-mood").textContent = savedMood;
-        document.getElementById("system-mood").textContent = savedMood;
     }
 
-
-    /* =========================
-       6. Guestbook
-    ========================= */
-    let guestMessages =
-        JSON.parse(localStorage.getItem("secretChatGuestbook") || "[]");
-
-    function saveGuestMessages(){
-        localStorage.setItem(
-            "secretChatGuestbook",
-            JSON.stringify(guestMessages)
-        );
-    }
-
-    function renderGuestbook(){
-
-        const box = document.getElementById("guest-messages");
-
-        box.innerHTML = guestMessages.map(message => `
-            <div class="message">
-                <div class="message-head">
-                    ${escapeHTML(message.avatar || avatarFromId(message.owner || message.user))} ${escapeHTML(message.user)} ♡
-                </div>
-
-                <div style="margin-top:7px">
-                    ${escapeHTML(message.text)}
-                </div>
-
-                <button class="comment-delete"
-                        style="margin-top:9px"
-                        data-guest-id="${message.id}">
-                    × DELETE
-                </button>
-            </div>
-        `).join("");
-    }
-
-    document.getElementById("send-guest").addEventListener("click",function(){
-
-        const input = document.getElementById("guest-input");
-        const text = input.value.trim();
-
-        if(!text){
-            alert("请先写一点留言 ♡");
-            return;
-        }
-
-        guestMessages.unshift({
-            id:Date.now().toString(36),
-            owner:visitorId,
-            user:visitorId,
-            avatar:visitorAvatar,
-            text:text
-        });
-
-        saveGuestMessages();
-
-        input.value = "";
-
-        renderGuestbook();
-    });
-
-    document.getElementById("guest-messages").addEventListener("click",function(e){
-
-        const button = e.target.closest("[data-guest-id]");
-
-        if(!button) return;
-
-        const id = button.dataset.guestId;
-
-        const message = guestMessages.find(m => m.id === id);
-
-        if(!message) return;
-
-        if(message.owner !== visitorId){
-            alert("只能删除你自己发布的留言 ♡");
-            return;
-        }
-
-        if(confirm("确定删除这条留言吗？")){
-
-            guestMessages =
-                guestMessages.filter(m => m.id !== id);
-
-            saveGuestMessages();
-            renderGuestbook();
-        }
-    });
-
-
-    /* =========================
-       7. 全页面小型漂浮装饰
-    ========================= */
-    const floatingSymbols = [
-        "🤍","☁️","🪽","🎀","🐰","✉️","🦷",
-        "♡","♥","☆","＊","%","★"
-    ];
-
-    const floatingLayer = document.getElementById("floating-layer");
-
-    for(let i=0;i<28;i++){
-
-        const item = document.createElement("span");
-
-        item.className = "float-item";
-
-        item.textContent =
-            floatingSymbols[
-                Math.floor(Math.random()*floatingSymbols.length)
-            ];
-
-        item.style.left = (Math.random()*98) + "%";
-        item.style.top = (Math.random()*98) + "%";
-
-        const size = 12 + Math.random()*11;
-
-        item.style.fontSize = size + "px";
-
-        item.style.setProperty(
-            "--x",
-            (-30 + Math.random()*60) + "px"
-        );
-
-        item.style.setProperty(
-            "--y",
-            (-30 + Math.random()*60) + "px"
-        );
-
-        item.style.setProperty(
-            "--duration",
-            (5 + Math.random()*8) + "s"
-        );
-
-        item.style.setProperty(
-            "--sparkle",
-            (1.5 + Math.random()*2.5) + "s"
-        );
-
-        item.style.animationDelay =
-            (-Math.random()*8) + "s";
-
-        floatingLayer.appendChild(item);
-    }
-
-
-    /* 初始渲染 */
     renderPosts();
-    renderGuestbook();
-    </script>
+}
 
-    </body>
-    </html>
+function renderPosts(){
+    const container = document.getElementById("posts");
+
+    if(posts.length === 0){
+        container.innerHTML = `
+            <div class="empty">
+                这里还没有日记 ♡<br>
+                快来写下第一篇吧！
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = posts.map(post => {
+        const comments = commentsByPost[post.id] || [];
+
+        return `
+        <article class="post" data-post-id="${post.id}">
+            <div class="post-title">♡ ${escapeHTML(post.title)}</div>
+            <div class="post-body">${escapeHTML(post.body)}</div>
+
+            <div class="post-meta">
+                ♡ ${escapeHTML(post.date)}
+                ♡ ${post.likes} likes
+                💬 ${comments.length} comments
+            </div>
+
+            <div class="post-actions">
+                <button class="btn like-btn" data-id="${post.id}">♡ LIKE</button>
+                <button class="btn delete delete-post-btn" data-id="${post.id}">× DELETE</button>
+            </div>
+
+            <div class="comment-box">
+                <div class="comment-title">♡ 评论区</div>
+                <div class="comments-list">
+                    ${
+                        comments.length
+                        ? comments.map(comment => `
+                            <div class="comment-row">
+                                <div class="comment-text">
+                                    <strong>${escapeHTML(comment.avatar || avatarFromId(comment.owner))} ${escapeHTML(comment.owner)}</strong>
+                                    ♡<br>
+                                    ${escapeHTML(comment.text)}
+                                </div>
+                                <button class="comment-delete"
+                                        data-post-id="${post.id}"
+                                        data-comment-id="${comment.id}">×</button>
+                            </div>
+                        `).join("")
+                        : `<div style="color:#b88ca2;margin-bottom:12px">还没有评论，来留下第一句话吧 ♡</div>`
+                    }
+                </div>
+
+                <div class="guest-row">
+                    <textarea class="guest-input comment-input"
+                              data-post-id="${post.id}"
+                              placeholder="写一句评论吧... ♡"></textarea>
+                    <button class="btn send-comment-btn" data-post-id="${post.id}">SEND</button>
+                </div>
+            </div>
+        </article>
+        `;
+    }).join("");
+}
+
+/* =========================
+   3. 发布日记（云端）
+========================= */
+document.getElementById("send-post").addEventListener("click", async function(){
+    const titleInput = document.getElementById("post-title");
+    const bodyInput = document.getElementById("post-body");
+
+    const title = titleInput.value.trim();
+    const body = bodyInput.value.trim();
+
+    if(!title || !body){
+        alert("请先写好标题和日记内容 ♡");
+        return;
+    }
+
+    const now = new Date();
+    const post = {
+        id: Date.now().toString(36) + Math.random().toString(36).slice(2,6),
+        owner: visitorId,
+        title: title,
+        body: body,
+        date: now.getFullYear() + "/" +
+              String(now.getMonth()+1).padStart(2,"0") + "/" +
+              String(now.getDate()).padStart(2,"0"),
+        likes: 0
+    };
+
+    const { error } = await supabaseClient.from("posts").insert(post);
+    if(error){ alert("发布失败，请稍后重试"); console.error(error); return; }
+
+    titleInput.value = "";
+    bodyInput.value = "";
+    await loadPosts();
+});
+
+/* =========================
+   4. 日记 / 评论功能（云端）
+========================= */
+document.getElementById("posts").addEventListener("click", async function(e){
+
+    const likeButton = e.target.closest(".like-btn");
+    if(likeButton){
+        const post = posts.find(p => p.id === likeButton.dataset.id);
+        if(post){
+            await supabaseClient.from("posts")
+                .update({ likes: post.likes + 1 })
+                .eq("id", post.id);
+            await loadPosts();
+        }
+        return;
+    }
+
+    const deletePostButton = e.target.closest(".delete-post-btn");
+    if(deletePostButton){
+        const id = deletePostButton.dataset.id;
+        const post = posts.find(p => p.id === id);
+        if(!post) return;
+
+        if(post.owner !== visitorId){
+            alert("只能删除你自己发布的日记 ♡");
+            return;
+        }
+        if(confirm("确定要删除这篇日记吗？")){
+            await supabaseClient.from("posts").delete().eq("id", id);
+            await supabaseClient.from("comments").delete().eq("post_id", id);
+            await loadPosts();
+        }
+        return;
+    }
+
+    const sendCommentButton = e.target.closest(".send-comment-btn");
+    if(sendCommentButton){
+        const postId = sendCommentButton.dataset.postId;
+        const input = document.querySelector(`.comment-input[data-post-id="${postId}"]`);
+        if(!input) return;
+
+        const text = input.value.trim();
+        if(!text){ alert("请先写一点评论 ♡"); return; }
+
+        const { error } = await supabaseClient.from("comments").insert({
+            id: Date.now().toString(36) + Math.random().toString(36).slice(2,5),
+            post_id: postId,
+            owner: visitorId,
+            avatar: visitorAvatar,
+            text: text
+        });
+
+        if(error){ alert("评论失败，请稍后重试"); console.error(error); return; }
+        await loadPosts();
+        return;
+    }
+
+    const deleteCommentButton = e.target.closest(".comment-delete");
+    if(deleteCommentButton){
+        const commentId = deleteCommentButton.dataset.commentId;
+        const postId = deleteCommentButton.dataset.postId;
+
+        const comments = commentsByPost[postId] || [];
+        const comment = comments.find(c => c.id === commentId);
+        if(!comment) return;
+
+        if(comment.owner !== visitorId){
+            alert("只能删除你自己发布的评论 ♡");
+            return;
+        }
+        if(confirm("确定删除这条评论吗？")){
+            await supabaseClient.from("comments").delete().eq("id", commentId);
+            await loadPosts();
+        }
+    }
+});
+
+/* =========================
+   5. 心情（本地即可）
+========================= */
+const moods = ["🥲","🥰","🙃","😔","🥺","😳","🤯","😶‍🌫️","🥶","🫠","😑","😵‍💫","🤢","🫥","😵","🤡","☠️"];
+const moodList = document.getElementById("mood-list");
+
+moods.forEach(mood => {
+    const button = document.createElement("button");
+    button.className = "mood";
+    button.textContent = mood;
+    button.title = mood;
+    button.addEventListener("click", function(){
+        document.getElementById("today-mood").textContent = mood;
+        document.getElementById("system-mood").textContent = mood;
+        localStorage.setItem("secretChatMood", mood);
+    });
+    moodList.appendChild(button);
+});
+
+const savedMood = localStorage.getItem("secretChatMood");
+if(savedMood){
+    document.getElementById("today-mood").textContent = savedMood;
+    document.getElementById("system-mood").textContent = savedMood;
+}
+
+/* =========================
+   6. Guestbook（云端）
+========================= */
+let guestMessages = [];
+
+async function loadGuestbook(){
+    const { data, error } = await supabaseClient
+        .from("guestbook")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+    if(error){ console.error(error); return; }
+    guestMessages = data || [];
+    renderGuestbook();
+}
+
+function renderGuestbook(){
+    const box = document.getElementById("guest-messages");
+    box.innerHTML = guestMessages.map(message => `
+        <div class="message">
+            <div class="message-head">
+                ${escapeHTML(message.avatar || avatarFromId(message.owner))} ${escapeHTML(message.owner)} ♡
+            </div>
+            <div style="margin-top:7px">${escapeHTML(message.text)}</div>
+            <button class="comment-delete" style="margin-top:9px" data-guest-id="${message.id}">× DELETE</button>
+        </div>
+    `).join("");
+}
+
+document.getElementById("send-guest").addEventListener("click", async function(){
+    const input = document.getElementById("guest-input");
+    const text = input.value.trim();
+    if(!text){ alert("请先写一点留言 ♡"); return; }
+
+    const { error } = await supabaseClient.from("guestbook").insert({
+        id: Date.now().toString(36),
+        owner: visitorId,
+        avatar: visitorAvatar,
+        text: text
+    });
+
+    if(error){ alert("留言失败，请稍后重试"); console.error(error); return; }
+
+    input.value = "";
+    await loadGuestbook();
+});
+
+document.getElementById("guest-messages").addEventListener("click", async function(e){
+    const button = e.target.closest("[data-guest-id]");
+    if(!button) return;
+
+    const id = button.dataset.guestId;
+    const message = guestMessages.find(m => m.id === id);
+    if(!message) return;
+
+    if(message.owner !== visitorId){
+        alert("只能删除你自己发布的留言 ♡");
+        return;
+    }
+    if(confirm("确定删除这条留言吗？")){
+        await supabaseClient.from("guestbook").delete().eq("id", id);
+        await loadGuestbook();
+    }
+});
+
+/* =========================
+   7. 漂浮装饰
+========================= */
+const floatingSymbols = ["🤍","☁️","🪽","🎀","🐰","✉️","🦷","♡","♥","☆","＊","%","★"];
+const floatingLayer = document.getElementById("floating-layer");
+
+for(let i=0;i<28;i++){
+    const item = document.createElement("span");
+    item.className = "float-item";
+    item.textContent = floatingSymbols[Math.floor(Math.random()*floatingSymbols.length)];
+    item.style.left = (Math.random()*98) + "%";
+    item.style.top = (Math.random()*98) + "%";
+    const size = 12 + Math.random()*11;
+    item.style.fontSize = size + "px";
+    item.style.setProperty("--x", (-30 + Math.random()*60) + "px");
+    item.style.setProperty("--y", (-30 + Math.random()*60) + "px");
+    item.style.setProperty("--duration", (5 + Math.random()*8) + "s");
+    item.style.setProperty("--sparkle", (1.5 + Math.random()*2.5) + "s");
+    item.style.animationDelay = (-Math.random()*8) + "s";
+    floatingLayer.appendChild(item);
+}
+
+/* =========================
+   8. 初始加载
+========================= */
+loadPosts();
+loadGuestbook();
+</script>
+
+</body>
+</html>
